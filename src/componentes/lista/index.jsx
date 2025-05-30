@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import './style.css';
 
-function Lista() {
+function Lista({ onVerDetalle }) {
   const [chistes, setChistes] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const [loading, setLoading] = useState(true);
@@ -33,7 +33,6 @@ function Lista() {
     );
   };
 
-  // Función de manejo de scroll
   const handleScroll = (e) => {
     const container = e.target;
     const bottom = container.scrollHeight === container.scrollTop + container.clientHeight;
@@ -49,13 +48,12 @@ function Lista() {
       container.addEventListener('scroll', handleScroll);
     }
 
-    // Limpiar el event listener cuando el componente se desmonte
     return () => {
       if (container) {
         container.removeEventListener('scroll', handleScroll);
       }
     };
-  }, [loading]);  // Se asegura de que el scroll se registre después de que el estado loading cambie
+  }, [loading]);
 
   if (loading && chistes.length === 0) return <div className="container"><h2>Cargando chistes...</h2></div>;
   if (error) return <div className="container"><h2>Error: {error}</h2></div>;
@@ -75,7 +73,13 @@ function Lista() {
           <div key={index} className="c-lista-pokemon">
             <div className="c-lista-pokemon-card">
               <p className="pokemon-name">{`Chiste #${index + 1}`}</p>
-              <p className="pokemon-id">{chiste.setup} - {chiste.punchline}</p>
+              <p className="pokemon-id">{chiste.setup}</p>
+              <button
+                className="ver-mas-btn"
+                onClick={() => onVerDetalle(chiste)}
+              >
+                Ver más
+              </button>
             </div>
           </div>
         ))}
