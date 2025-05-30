@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import './style.css';
 
-function Lista({ onVerDetalle }) {
+function Lista({ onAgregarFavorito }) {
   const [chistes, setChistes] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandido, setExpandido] = useState(null); // Estado para controlar cuál chiste se expande
 
   const obtenerChistes = async () => {
     try {
@@ -13,7 +14,7 @@ function Lista({ onVerDetalle }) {
       if (!res.ok) throw new Error(`Error en la solicitud: ${res.status}`);
       
       const data = await res.json();
-      setChistes((prevChistes) => [...prevChistes, ...data]);
+      setChistes(data); // No es necesario concatenar, solo establecer los nuevos chistes
     } catch (error) {
       console.error('Error:', error);
       setError(error.message);
@@ -32,28 +33,6 @@ function Lista({ onVerDetalle }) {
       chiste.punchline.toLowerCase().includes(busqueda.toLowerCase())
     );
   };
-
-  const handleScroll = (e) => {
-    const container = e.target;
-    const bottom = container.scrollHeight === container.scrollTop + container.clientHeight;
-    if (bottom && !loading) {
-      setLoading(true);
-      obtenerChistes();
-    }
-  };
-
-  useEffect(() => {
-    const container = document.querySelector('.c-lista');
-    if (container) {
-      container.addEventListener('scroll', handleScroll);
-    }
-
-    return () => {
-      if (container) {
-        container.removeEventListener('scroll', handleScroll);
-      }
-    };
-  }, [loading]);
 
   if (loading && chistes.length === 0) return <div className="container"><h2>Cargando chistes...</h2></div>;
   if (error) return <div className="container"><h2>Error: {error}</h2></div>;
@@ -74,12 +53,31 @@ function Lista({ onVerDetalle }) {
             <div className="c-lista-pokemon-card">
               <p className="pokemon-name">{`Chiste #${index + 1}`}</p>
               <p className="pokemon-id">{chiste.setup}</p>
+
+              {/* Si el chiste está expandido, mostrar la punchline */}
+              {expandido === index && (
+                <p className="punchline" style={{ fontSize: '1.5rem', fontWeight: 'bold', marginTop: '1rem' }}>
+                  {chiste.punchline}
+                </p>
+              )}
+
+              {/* Botón para alternar el estado expandido */}
               <button
                 className="ver-mas-btn"
-                onClick={() => onVerDetalle(chiste)}
+                onClick={() => setExpandido(expandido === index ? null : index)}
               >
-                Ver más
+                {expandido === index ? "Ocultar" : "Ver más"}
               </button>
+
+              {onAgregarFavorito && (
+                <button
+                  className="ver-mas-btn"
+                  style={{ backgroundColor: 'green', marginTop: '5px' }}
+                  onClick={() => onAgregarFavorito(chiste)}
+                >
+                  Añadir a Favoritos
+                </button>
+              )}
             </div>
           </div>
         ))}
